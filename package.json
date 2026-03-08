@@ -1,0 +1,55 @@
+{
+  "name": "crazyrouter-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for 627+ AI Models via Crazyrouter - Text, Image, Video, Audio, Music Generation",
+  "main": "dist/index.js",
+  "type": "module",
+  "bin": {
+    "crazyrouter-mcp": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "ai",
+    "api",
+    "gateway",
+    "openai",
+    "claude",
+    "gemini",
+    "crazyrouter",
+    "llm",
+    "image-generation",
+    "video-generation",
+    "music-generation",
+    "gpt-5",
+    "dall-e",
+    "sora",
+    "model-context-protocol"
+  ],
+  "author": "Crazyrouter",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xujfcn/crazyrouter-mcp.git"
+  },
+  "homepage": "https://crazyrouter.com",
+  "bugs": {
+    "url": "https://github.com/xujfcn/crazyrouter-mcp/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0",
+    "@types/node": "^22.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
