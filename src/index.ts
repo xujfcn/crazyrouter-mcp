@@ -7,7 +7,7 @@ import { z } from "zod";
 const API_BASE = "https://crazyrouter.com/v1";
 const DEFAULT_CHAT_MODEL = "gpt-5-mini";
 const DEFAULT_IMAGE_MODEL = "dall-e-3";
-const DEFAULT_VIDEO_MODEL = "kling-v2";
+const DEFAULT_VIDEO_MODEL = "kling-v2-1";
 
 function getApiKey(): string {
   const key = process.env.CRAZYROUTER_API_KEY;
@@ -85,24 +85,28 @@ const MODEL_CATEGORIES: Record<string, string[]> = {
   image: [
     "dall-e-3",
     "midjourney",
-    "flux-pro",
-    "flux-dev",
-    "flux-schnell",
-    "stable-diffusion-3.5",
-    "nano-banana-pro",
-    "ideogram-v2",
+    "flux-pro-1.1-ultra",
+    "flux-kontext-pro",
+    "flux-kontext-max",
+    "sd3.5-large",
+    "sd3.5-large-turbo",
+    "stable-diffusion-xl-1024-v1-0",
+    "imagen-4.0-generate-001",
+    "imagen-4.0-ultra-generate-001",
+    "imagen-3.0-generate-002",
   ],
   video: [
     "sora-2",
-    "kling-v2",
+    "kling-v2-1",
     "kling-v1",
-    "veo-3",
-    "seedance",
-    "pika",
-    "runway-gen4",
+    "veo3",
+    "doubao-seedance-1-5-pro_720p",
+    "pika-1.5",
+    "runway-vip-video",
+    "MiniMax-Hailuo-2.3",
   ],
-  audio: ["tts-1", "tts-1-hd", "whisper-1"],
-  music: ["suno-v4", "chirp"],
+  audio: ["tts-1", "tts-1-hd", "gpt-4o-mini-tts", "gemini-2.5-flash-preview-tts", "gemini-2.5-pro-preview-tts", "whisper-1"],
+  music: ["suno_music", "suno-v3", "suno_lyrics"],
 };
 
 // --- MCP Server Setup ---
@@ -279,7 +283,7 @@ server.tool(
       .string()
       .default(DEFAULT_IMAGE_MODEL)
       .describe(
-        `Image generation model to use (default: ${DEFAULT_IMAGE_MODEL}). Options: dall-e-3, midjourney, flux-pro, flux-dev, stable-diffusion-3.5, nano-banana-pro`
+        `Image generation model to use (default: ${DEFAULT_IMAGE_MODEL}). Options: dall-e-3, midjourney, flux-pro-1.1-ultra, flux-kontext-pro, sd3.5-large, imagen-4.0-generate-001`
       ),
     size: z
       .string()
@@ -365,7 +369,7 @@ server.tool(
       .string()
       .default(DEFAULT_VIDEO_MODEL)
       .describe(
-        `Video generation model to use (default: ${DEFAULT_VIDEO_MODEL}). Options: sora-2, kling-v2, veo-3, seedance, pika, runway-gen4`
+        `Video generation model to use (default: ${DEFAULT_VIDEO_MODEL}). Options: sora-2, kling-v2-1, veo3, doubao-seedance-1-5-pro_720p, pika-1.5, runway-vip-video, MiniMax-Hailuo-2.3`
       ),
   },
   async ({ prompt, model }) => {

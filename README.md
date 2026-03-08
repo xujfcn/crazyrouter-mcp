@@ -198,10 +198,12 @@ Add to your OpenClaw MCP config:
 |-------|-------------|
 | DALL-E 3 | OpenAI's latest image model |
 | Midjourney | Industry-leading artistic image generation |
-| Flux Pro / Dev / Schnell | Black Forest Labs' open models |
-| Stable Diffusion 3.5 | Stability AI's open model |
-| Nano Banana Pro | Fast, high-quality generation |
-| Ideogram V2 | Text-in-image specialist |
+| Flux Pro 1.1 Ultra | Black Forest Labs' flagship model |
+| Flux Kontext Pro/Max | Contextual image generation |
+| Stable Diffusion 3.5 Large | Stability AI's open model |
+| Stable Diffusion XL | Classic high-quality generation |
+| Imagen 4.0 | Google's latest image model |
+| Imagen 3.0 | Google's proven image model |
 
 ### 🎬 Video Generation Models
 
@@ -210,18 +212,21 @@ Add to your OpenClaw MCP config:
 | Sora 2 | OpenAI's video generation model |
 | Kling V2 | Kuaishou's cinematic video model |
 | Veo 3 | Google's video generation model |
-| Seedance | ByteDance's dance video model |
-| Pika | Creative video generation |
-| Runway Gen-4 | Professional video synthesis |
+| Seedance 1.5 Pro | ByteDance's dance video model |
+| Pika 1.5 | Creative video generation |
+| Runway VIP | Professional video synthesis |
+| MiniMax Hailuo 2.3 | MiniMax's video model |
 
 ### 🎵 Music & Audio Models
 
 | Model | Description |
 |-------|-------------|
-| Suno V4 | AI music composition |
-| Chirp | Music generation model |
-| TTS Models | Multiple text-to-speech engines |
-| STT Models | Speech-to-text transcription |
+| Suno Music | AI music composition |
+| Suno V3 | Music generation model |
+| TTS-1 / TTS-1-HD | OpenAI text-to-speech |
+| GPT-4o Mini TTS | Latest OpenAI TTS |
+| Gemini TTS | Google text-to-speech |
+| Whisper-1 | Speech-to-text transcription |
 
 > 📖 Full model list: [crazyrouter.com/models](https://crazyrouter.com/models?utm_source=github&utm_medium=mcp&utm_campaign=dev_community)
 
