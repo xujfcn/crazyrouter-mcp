@@ -51,5 +51,11 @@
   },
   "engines": {
     "node": ">=18"
-  }
+  },
+  "mcpName": "io.github.xujfcn/crazyrouter",
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ]
 }
