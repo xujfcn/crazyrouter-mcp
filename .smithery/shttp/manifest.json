@@ -1,0 +1,172 @@
+{
+  "payload": {
+    "type": "hosted",
+    "stateful": false,
+    "hasAuthAdapter": false,
+    "serverCard": {
+      "serverInfo": {
+        "name": "crazyrouter",
+        "version": "1.0.0",
+        "description": "Access 627+ AI models through Crazyrouter — chat, image generation, video generation, music, and more."
+      },
+      "tools": [
+        {
+          "name": "chat",
+          "description": "Send a message to any AI model via Crazyrouter. Supports 627+ models including GPT-5, Claude Opus 4.6, Gemini 3, DeepSeek R1, Llama 4, Qwen3, Grok 4, and more.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string",
+                "default": "gpt-5-mini",
+                "description": "The AI model to use (default: gpt-5-mini). Examples: gpt-5, claude-opus-4-6, gemini-3-pro, deepseek-r1, llama-4-scout, qwen3-235b, grok-4"
+              },
+              "messages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "role": {
+                      "type": "string",
+                      "enum": [
+                        "system",
+                        "user",
+                        "assistant"
+                      ],
+                      "description": "The role of the message sender"
+                    },
+                    "content": {
+                      "type": "string",
+                      "description": "The message content"
+                    }
+                  },
+                  "required": [
+                    "role",
+                    "content"
+                  ],
+                  "additionalProperties": false
+                },
+                "description": "Array of chat messages with role and content"
+              },
+              "temperature": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 2,
+                "description": "Sampling temperature (0-2). Lower = more deterministic, higher = more creative"
+              },
+              "max_tokens": {
+                "type": "number",
+                "description": "Maximum number of tokens to generate"
+              }
+            },
+            "required": [
+              "messages"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          }
+        },
+        {
+          "name": "list_models",
+          "description": "List available AI models on Crazyrouter. Filter by category: chat, image, video, audio, or music.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "category": {
+                "type": "string",
+                "enum": [
+                  "chat",
+                  "image",
+                  "video",
+                  "audio",
+                  "music"
+                ],
+                "description": "Filter models by category. Options: chat, image, video, audio, music. Omit to show all categories."
+              }
+            },
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          }
+        },
+        {
+          "name": "generate_image",
+          "description": "Generate images using AI models via Crazyrouter. Supports DALL-E 3, Midjourney, Flux, Stable Diffusion, and more.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "description": "Text description of the image to generate"
+              },
+              "model": {
+                "type": "string",
+                "default": "dall-e-3",
+                "description": "Image generation model to use (default: dall-e-3). Options: dall-e-3, midjourney, flux-pro-1.1-ultra, flux-kontext-pro, sd3.5-large, imagen-4.0-generate-001"
+              },
+              "size": {
+                "type": "string",
+                "description": "Image size. For DALL-E 3: 1024x1024, 1024x1792, 1792x1024."
+              },
+              "n": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 4,
+                "description": "Number of images to generate (1-4, default: 1)"
+              }
+            },
+            "required": [
+              "prompt"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          }
+        },
+        {
+          "name": "generate_video",
+          "description": "Generate videos using AI models via Crazyrouter. Supports Sora 2, Kling V2, Veo 3, Seedance, Pika, and more.",
+          "inputSchema": {
+            "type": "object",
+            "properties": {
+              "prompt": {
+                "type": "string",
+                "description": "Text description of the video to generate"
+              },
+              "model": {
+                "type": "string",
+                "default": "kling-v2-1",
+                "description": "Video generation model to use (default: kling-v2-1). Options: sora-2, kling-v2-1, veo3, doubao-seedance-1-5-pro_720p, pika-1.5, runway-vip-video, MiniMax-Hailuo-2.3"
+              }
+            },
+            "required": [
+              "prompt"
+            ],
+            "additionalProperties": false,
+            "$schema": "http://json-schema.org/draft-07/schema#"
+          },
+          "execution": {
+            "taskSupport": "forbidden"
+          }
+        }
+      ],
+      "resources": [],
+      "prompts": []
+    },
+    "source": {
+      "commit": "7dd47049888adf2e6361ab8da52051c1ecf8d0ce",
+      "branch": "main"
+    }
+  },
+  "artifacts": {
+    "module": "module.js",
+    "sourcemap": "module.js.map"
+  }
+}
