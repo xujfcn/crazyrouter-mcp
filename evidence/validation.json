@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-10-12T09:27:53.302857+00:00",
+  "node": "v22.22.3",
+  "os": "Windows",
+  "server_package": "crazyrouter-mcp@1.0.1",
+  "transport": "stdio; local built server started by example client",
+  "live_campaign": {
+    "passed": true,
+    "steps": [
+      {
+        "tool": "list_models",
+        "elapsed_ms": 677,
+        "ok": true
+      },
+      {
+        "tool": "chat",
+        "elapsed_ms": 1891,
+        "ok": true
+      },
+      {
+        "tool": "generate_image",
+        "elapsed_ms": 25942,
+        "ok": true
+      }
+    ],
+    "original_image_dimensions": [
+      2048,
+      2048
+    ],
+    "original_image_bytes": 5397665,
+    "original_image_sha256": "91e959db10b20e8f5dc93d48c846ad481a559cd0b92542b2ff7bf447052af35a",
+    "preview": "../examples/output-preview.webp",
+    "copy": "../examples/output-copy.md"
+  },
+  "offline_tests": {
+    "command": "npm test",
+    "passed": 7
+  },
+  "limits": [
+    "One public notebook fixture, not a quality benchmark",
+    "GUI clients not tested in this release",
+    "Actual account charges not measured",
+    "Final run_kind labeling was verified by offline tests after this live run; API workflow unchanged"
+  ]
+}

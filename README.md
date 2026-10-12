@@ -1,5 +1,11 @@
 # Crazyrouter MCP: chat, image generation and model discovery
 
+## Practical guides / 实操入口
+
+- [产品文案＋配图、模型发现＋保存图片 / Runnable workflows](examples/README.md)
+- [版本与验证边界 / Validation](evidence/validation.json)
+
+
 Updated 2026-10-12. This MCP server connects supported clients to Crazyrouter using your API key. The repository implements three tools; the gateway's complete catalogue is broader than these tools.
 
 ## Tools
