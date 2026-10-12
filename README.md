@@ -14,9 +14,13 @@ Model discovery does not imply that this MCP implements each model's protocol. V
 
 The server no longer silently replaces failed discovery with a hardcoded model list. Authentication and discovery errors are returned to the client. Categories use public endpoint metadata and name-based audio detection; unknown types appear under `other`.
 
-## Install from this repository
+## Install from npm
 
 Requires Node.js 22 or later.
+
+Configure your MCP client with `npx -y crazyrouter-mcp@1.0.1` and set `CRAZYROUTER_API_KEY` as shown below. The client starts the server automatically.
+
+To build from source instead:
 
 ```bash
 git clone https://github.com/xujfcn/crazyrouter-mcp.git
@@ -25,18 +29,16 @@ npm ci
 npm run build
 ```
 
-These instructions use the repository build. They do not assume that an npm registry release has been updated to match it.
-
 ## Claude Desktop or Cursor
 
-Create a key in the [Crazyrouter console](https://crazyrouter.com/console/token?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_02__en&utm_medium=github_readme). Add the following to the client's MCP configuration, replacing the absolute path and key locally:
+Create a key in the [Crazyrouter console](https://crazyrouter.com/console/token?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_02__en&utm_medium=github_readme). Add the following to the client's MCP configuration, replacing the key locally:
 
 ```json
 {
   "mcpServers": {
     "crazyrouter": {
-      "command": "node",
-      "args": ["/absolute/path/to/crazyrouter-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "crazyrouter-mcp@1.0.1"],
       "env": { "CRAZYROUTER_API_KEY": "YOUR_CRAZYROUTER_API_KEY" }
     }
   }
@@ -54,8 +56,8 @@ Use `.vscode/mcp.json` and the VS Code MCP schema:
   "servers": {
     "crazyrouter": {
       "type": "stdio",
-      "command": "node",
-      "args": ["/absolute/path/to/crazyrouter-mcp/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "crazyrouter-mcp@1.0.1"],
       "env": { "CRAZYROUTER_API_KEY": "${input:crazyrouter-api-key}" }
     }
   },
@@ -105,7 +107,7 @@ Tests use mocked HTTP responses through an MCP client/server connection. On 2026
 
 本仓库支持文本聊天、同步图片生成、实时模型发现三个工具。模型目录会返回视频、音乐等类别，但不代表这些能力已在 MCP 中实现。旧版视频工具错误地调用聊天接口，已移除；请按 [API 文档](https://docs.crazyrouter.com?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_05__en&utm_medium=github_readme)使用原生任务接口。
 
-使用 Node.js 22+，克隆后运行 `npm ci` 和 `npm run build`，再将本地 `dist/index.js` 配置到 MCP 客户端。密钥通过 `CRAZYROUTER_API_KEY` 传入。不要将模型目录中的显示名称当作精确 API ID，也不要将推广参数添加到接口地址。
+使用 Node.js 22+，按上面的配置通过 `npx -y crazyrouter-mcp@1.0.1` 启动。也可以克隆仓库后运行 `npm ci` 和 `npm run build`，再将本地 `dist/index.js` 配置到 MCP 客户端。密钥通过 `CRAZYROUTER_API_KEY` 传入。不要将模型目录中的显示名称当作精确 API ID，也不要将推广参数添加到接口地址。
 
 [创建密钥](https://crazyrouter.com/console/token?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_06__en&utm_medium=github_readme) · [当前模型与价格](https://crazyrouter.com/zh/pricing?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_07__en&utm_medium=github_readme)
 
