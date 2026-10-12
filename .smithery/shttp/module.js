@@ -6,7 +6,11 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  try {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  } catch (e) {
+    throw mod = 0, e;
+  }
 };
 var __export = (target, all) => {
   for (var name in all)
@@ -16888,17 +16892,17 @@ var CompleteRequestSchema = RequestSchema.extend({
   method: literal("completion/complete"),
   params: CompleteRequestParamsSchema
 });
-function assertCompleteRequestPrompt(request) {
-  if (request.params.ref.type !== "ref/prompt") {
-    throw new TypeError(`Expected CompleteRequestPrompt, but got ${request.params.ref.type}`);
+function assertCompleteRequestPrompt(request2) {
+  if (request2.params.ref.type !== "ref/prompt") {
+    throw new TypeError(`Expected CompleteRequestPrompt, but got ${request2.params.ref.type}`);
   }
-  void request;
+  void request2;
 }
-function assertCompleteRequestResourceTemplate(request) {
-  if (request.params.ref.type !== "ref/resource") {
-    throw new TypeError(`Expected CompleteRequestResourceTemplate, but got ${request.params.ref.type}`);
+function assertCompleteRequestResourceTemplate(request2) {
+  if (request2.params.ref.type !== "ref/resource") {
+    throw new TypeError(`Expected CompleteRequestResourceTemplate, but got ${request2.params.ref.type}`);
   }
-  void request;
+  void request2;
 }
 var CompleteResultSchema = ResultSchema.extend({
   completion: looseObject({
@@ -18283,13 +18287,13 @@ var zodToJsonSchema = (schema, options) => {
     }, true) ?? parseAnyDef(refs)
   }), {}) : void 0;
   const name = typeof options === "string" ? options : options?.nameStrategy === "title" ? void 0 : options?.name;
-  const main2 = parseDef(schema._def, name === void 0 ? refs : {
+  const main = parseDef(schema._def, name === void 0 ? refs : {
     ...refs,
     currentPath: [...refs.basePath, refs.definitionPath, name]
   }, false) ?? parseAnyDef(refs);
   const title = typeof options === "object" && options.name !== void 0 && options.nameStrategy === "title" ? options.name : void 0;
   if (title !== void 0) {
-    main2.title = title;
+    main.title = title;
   }
   if (refs.flags.hasReferencedOpenAiAnyType) {
     if (!definitions) {
@@ -18310,9 +18314,9 @@ var zodToJsonSchema = (schema, options) => {
     }
   }
   const combined = name === void 0 ? definitions ? {
-    ...main2,
+    ...main,
     [refs.definitionPath]: definitions
-  } : main2 : {
+  } : main : {
     $ref: [
       ...refs.$refStrategy === "relative" ? [] : refs.basePath,
       refs.definitionPath,
@@ -18320,7 +18324,7 @@ var zodToJsonSchema = (schema, options) => {
     ].join("/"),
     [refs.definitionPath]: {
       ...definitions,
-      [name]: main2
+      [name]: main
     }
   };
   if (refs.target === "jsonSchema7") {
@@ -18405,8 +18409,8 @@ var Protocol = class {
     this._taskStore = _options?.taskStore;
     this._taskMessageQueue = _options?.taskMessageQueue;
     if (this._taskStore) {
-      this.setRequestHandler(GetTaskRequestSchema, async (request, extra) => {
-        const task = await this._taskStore.getTask(request.params.taskId, extra.sessionId);
+      this.setRequestHandler(GetTaskRequestSchema, async (request2, extra) => {
+        const task = await this._taskStore.getTask(request2.params.taskId, extra.sessionId);
         if (!task) {
           throw new McpError(ErrorCode.InvalidParams, "Failed to retrieve task: Task not found");
         }
@@ -18414,9 +18418,9 @@ var Protocol = class {
           ...task
         };
       });
-      this.setRequestHandler(GetTaskPayloadRequestSchema, async (request, extra) => {
+      this.setRequestHandler(GetTaskPayloadRequestSchema, async (request2, extra) => {
         const handleTaskResult = async () => {
-          const taskId = request.params.taskId;
+          const taskId = request2.params.taskId;
           if (this._taskMessageQueue) {
             let queuedMessage;
             while (queuedMessage = await this._taskMessageQueue.dequeue(taskId, extra.sessionId)) {
@@ -18467,9 +18471,9 @@ var Protocol = class {
         };
         return await handleTaskResult();
       });
-      this.setRequestHandler(ListTasksRequestSchema, async (request, extra) => {
+      this.setRequestHandler(ListTasksRequestSchema, async (request2, extra) => {
         try {
-          const { tasks, nextCursor } = await this._taskStore.listTasks(request.params?.cursor, extra.sessionId);
+          const { tasks, nextCursor } = await this._taskStore.listTasks(request2.params?.cursor, extra.sessionId);
           return {
             tasks,
             nextCursor,
@@ -18479,20 +18483,20 @@ var Protocol = class {
           throw new McpError(ErrorCode.InvalidParams, `Failed to list tasks: ${error2 instanceof Error ? error2.message : String(error2)}`);
         }
       });
-      this.setRequestHandler(CancelTaskRequestSchema, async (request, extra) => {
+      this.setRequestHandler(CancelTaskRequestSchema, async (request2, extra) => {
         try {
-          const task = await this._taskStore.getTask(request.params.taskId, extra.sessionId);
+          const task = await this._taskStore.getTask(request2.params.taskId, extra.sessionId);
           if (!task) {
-            throw new McpError(ErrorCode.InvalidParams, `Task not found: ${request.params.taskId}`);
+            throw new McpError(ErrorCode.InvalidParams, `Task not found: ${request2.params.taskId}`);
           }
           if (isTerminal(task.status)) {
             throw new McpError(ErrorCode.InvalidParams, `Cannot cancel task in terminal status: ${task.status}`);
           }
-          await this._taskStore.updateTaskStatus(request.params.taskId, "cancelled", "Client cancelled task execution.", extra.sessionId);
-          this._clearTaskQueue(request.params.taskId);
-          const cancelledTask = await this._taskStore.getTask(request.params.taskId, extra.sessionId);
+          await this._taskStore.updateTaskStatus(request2.params.taskId, "cancelled", "Client cancelled task execution.", extra.sessionId);
+          this._clearTaskQueue(request2.params.taskId);
+          const cancelledTask = await this._taskStore.getTask(request2.params.taskId, extra.sessionId);
           if (!cancelledTask) {
-            throw new McpError(ErrorCode.InvalidParams, `Task not found after cancellation: ${request.params.taskId}`);
+            throw new McpError(ErrorCode.InvalidParams, `Task not found after cancellation: ${request2.params.taskId}`);
           }
           return {
             _meta: {},
@@ -18609,14 +18613,14 @@ var Protocol = class {
     }
     Promise.resolve().then(() => handler(notification)).catch((error2) => this._onerror(new Error(`Uncaught error in notification handler: ${error2}`)));
   }
-  _onrequest(request, extra) {
-    const handler = this._requestHandlers.get(request.method) ?? this.fallbackRequestHandler;
+  _onrequest(request2, extra) {
+    const handler = this._requestHandlers.get(request2.method) ?? this.fallbackRequestHandler;
     const capturedTransport = this._transport;
-    const relatedTaskId = request.params?._meta?.[RELATED_TASK_META_KEY]?.taskId;
+    const relatedTaskId = request2.params?._meta?.[RELATED_TASK_META_KEY]?.taskId;
     if (handler === void 0) {
       const errorResponse = {
         jsonrpc: "2.0",
-        id: request.id,
+        id: request2.id,
         error: {
           code: ErrorCode.MethodNotFound,
           message: "Method not found"
@@ -18634,17 +18638,17 @@ var Protocol = class {
       return;
     }
     const abortController = new AbortController();
-    this._requestHandlerAbortControllers.set(request.id, abortController);
-    const taskCreationParams = isTaskAugmentedRequestParams(request.params) ? request.params.task : void 0;
-    const taskStore = this._taskStore ? this.requestTaskStore(request, capturedTransport?.sessionId) : void 0;
+    this._requestHandlerAbortControllers.set(request2.id, abortController);
+    const taskCreationParams = isTaskAugmentedRequestParams(request2.params) ? request2.params.task : void 0;
+    const taskStore = this._taskStore ? this.requestTaskStore(request2, capturedTransport?.sessionId) : void 0;
     const fullExtra = {
       signal: abortController.signal,
       sessionId: capturedTransport?.sessionId,
-      _meta: request.params?._meta,
+      _meta: request2.params?._meta,
       sendNotification: async (notification) => {
         if (abortController.signal.aborted)
           return;
-        const notificationOptions = { relatedRequestId: request.id };
+        const notificationOptions = { relatedRequestId: request2.id };
         if (relatedTaskId) {
           notificationOptions.relatedTask = { taskId: relatedTaskId };
         }
@@ -18654,7 +18658,7 @@ var Protocol = class {
         if (abortController.signal.aborted) {
           throw new McpError(ErrorCode.ConnectionClosed, "Request was cancelled");
         }
-        const requestOptions = { ...options, relatedRequestId: request.id };
+        const requestOptions = { ...options, relatedRequestId: request2.id };
         if (relatedTaskId && !requestOptions.relatedTask) {
           requestOptions.relatedTask = { taskId: relatedTaskId };
         }
@@ -18665,7 +18669,7 @@ var Protocol = class {
         return await this.request(r, resultSchema, requestOptions);
       },
       authInfo: extra?.authInfo,
-      requestId: request.id,
+      requestId: request2.id,
       requestInfo: extra?.requestInfo,
       taskId: relatedTaskId,
       taskStore,
@@ -18675,16 +18679,16 @@ var Protocol = class {
     };
     Promise.resolve().then(() => {
       if (taskCreationParams) {
-        this.assertTaskHandlerCapability(request.method);
+        this.assertTaskHandlerCapability(request2.method);
       }
-    }).then(() => handler(request, fullExtra)).then(async (result) => {
+    }).then(() => handler(request2, fullExtra)).then(async (result) => {
       if (abortController.signal.aborted) {
         return;
       }
       const response = {
         result,
         jsonrpc: "2.0",
-        id: request.id
+        id: request2.id
       };
       if (relatedTaskId && this._taskMessageQueue) {
         await this._enqueueTaskMessage(relatedTaskId, {
@@ -18701,7 +18705,7 @@ var Protocol = class {
       }
       const errorResponse = {
         jsonrpc: "2.0",
-        id: request.id,
+        id: request2.id,
         error: {
           code: Number.isSafeInteger(error2["code"]) ? error2["code"] : ErrorCode.InternalError,
           message: error2.message ?? "Internal error",
@@ -18718,7 +18722,7 @@ var Protocol = class {
         await capturedTransport?.send(errorResponse);
       }
     }).catch((error2) => this._onerror(new Error(`Failed to send response: ${error2}`))).finally(() => {
-      this._requestHandlerAbortControllers.delete(request.id);
+      this._requestHandlerAbortControllers.delete(request2.id);
     });
   }
   _onprogress(notification) {
@@ -18821,11 +18825,11 @@ var Protocol = class {
    *
    * @experimental Use `client.experimental.tasks.requestStream()` to access this method.
    */
-  async *requestStream(request, resultSchema, options) {
+  async *requestStream(request2, resultSchema, options) {
     const { task } = options ?? {};
     if (!task) {
       try {
-        const result = await this.request(request, resultSchema, options);
+        const result = await this.request(request2, resultSchema, options);
         yield { type: "result", result };
       } catch (error2) {
         yield {
@@ -18837,7 +18841,7 @@ var Protocol = class {
     }
     let taskId;
     try {
-      const createResult = await this.request(request, CreateTaskResultSchema, options);
+      const createResult = await this.request(request2, CreateTaskResultSchema, options);
       if (createResult.task) {
         taskId = createResult.task.taskId;
         yield { type: "taskCreated", task: createResult.task };
@@ -18885,7 +18889,7 @@ var Protocol = class {
    *
    * Do not use this method to emit notifications! Use notification() instead.
    */
-  request(request, resultSchema, options) {
+  request(request2, resultSchema, options) {
     const { relatedRequestId, resumptionToken, onresumptiontoken, task, relatedTask } = options ?? {};
     return new Promise((resolve, reject) => {
       const earlyReject = (error2) => {
@@ -18897,9 +18901,9 @@ var Protocol = class {
       }
       if (this._options?.enforceStrictCapabilities === true) {
         try {
-          this.assertCapabilityForMethod(request.method);
+          this.assertCapabilityForMethod(request2.method);
           if (task) {
-            this.assertTaskCapability(request.method);
+            this.assertTaskCapability(request2.method);
           }
         } catch (e) {
           earlyReject(e);
@@ -18909,16 +18913,16 @@ var Protocol = class {
       options?.signal?.throwIfAborted();
       const messageId = this._requestMessageId++;
       const jsonrpcRequest = {
-        ...request,
+        ...request2,
         jsonrpc: "2.0",
         id: messageId
       };
       if (options?.onprogress) {
         this._progressHandlers.set(messageId, options.onprogress);
         jsonrpcRequest.params = {
-          ...request.params,
+          ...request2.params,
           _meta: {
-            ...request.params?._meta || {},
+            ...request2.params?._meta || {},
             progressToken: messageId
           }
         };
@@ -19122,8 +19126,8 @@ var Protocol = class {
   setRequestHandler(requestSchema, handler) {
     const method = getMethodLiteral(requestSchema);
     this.assertRequestHandlerCapability(method);
-    this._requestHandlers.set(method, (request, extra) => {
-      const parsed = parseWithCompat(requestSchema, request);
+    this._requestHandlers.set(method, (request2, extra) => {
+      const parsed = parseWithCompat(requestSchema, request2);
       return Promise.resolve(handler(parsed, extra));
     });
   }
@@ -19238,19 +19242,19 @@ var Protocol = class {
       }, { once: true });
     });
   }
-  requestTaskStore(request, sessionId) {
+  requestTaskStore(request2, sessionId) {
     const taskStore = this._taskStore;
     if (!taskStore) {
       throw new Error("No task store configured");
     }
     return {
       createTask: async (taskParams) => {
-        if (!request) {
+        if (!request2) {
           throw new Error("No request provided");
         }
-        return await taskStore.createTask(taskParams, request.id, {
-          method: request.method,
-          params: request.params
+        return await taskStore.createTask(taskParams, request2.id, {
+          method: request2.method,
+          params: request2.params
         }, sessionId);
       },
       getTask: async (taskId) => {
@@ -19411,8 +19415,8 @@ var ExperimentalServerTasks = class {
    *
    * @experimental
    */
-  requestStream(request, resultSchema, options) {
-    return this._server.requestStream(request, resultSchema, options);
+  requestStream(request2, resultSchema, options) {
+    return this._server.requestStream(request2, resultSchema, options);
   }
   /**
    * Sends a sampling request and returns an AsyncGenerator that yields response messages.
@@ -19657,12 +19661,12 @@ var Server = class extends Protocol {
     this._capabilities = options?.capabilities ?? {};
     this._instructions = options?.instructions;
     this._jsonSchemaValidator = options?.jsonSchemaValidator ?? new AjvJsonSchemaValidator();
-    this.setRequestHandler(InitializeRequestSchema, (request) => this._oninitialize(request));
+    this.setRequestHandler(InitializeRequestSchema, (request2) => this._oninitialize(request2));
     this.setNotificationHandler(InitializedNotificationSchema, () => this.oninitialized?.());
     if (this._capabilities.logging) {
-      this.setRequestHandler(SetLevelRequestSchema, async (request, extra) => {
+      this.setRequestHandler(SetLevelRequestSchema, async (request2, extra) => {
         const transportSessionId = extra.sessionId || extra.requestInfo?.headers["mcp-session-id"] || void 0;
-        const { level } = request.params;
+        const { level } = request2.params;
         const parseResult = LoggingLevelSchema.safeParse(level);
         if (parseResult.success) {
           this._loggingLevels.set(transportSessionId, parseResult.data);
@@ -19721,14 +19725,14 @@ var Server = class extends Protocol {
     }
     const method = methodValue;
     if (method === "tools/call") {
-      const wrappedHandler = async (request, extra) => {
-        const validatedRequest = safeParse2(CallToolRequestSchema, request);
+      const wrappedHandler = async (request2, extra) => {
+        const validatedRequest = safeParse2(CallToolRequestSchema, request2);
         if (!validatedRequest.success) {
           const errorMessage = validatedRequest.error instanceof Error ? validatedRequest.error.message : String(validatedRequest.error);
           throw new McpError(ErrorCode.InvalidParams, `Invalid tools/call request: ${errorMessage}`);
         }
         const { params } = validatedRequest.data;
-        const result = await Promise.resolve(handler(request, extra));
+        const result = await Promise.resolve(handler(request2, extra));
         if (params.task) {
           const taskValidationResult = safeParse2(CreateTaskResultSchema, result);
           if (!taskValidationResult.success) {
@@ -19859,10 +19863,10 @@ var Server = class extends Protocol {
     }
     assertToolsCallTaskCapability(this._capabilities.tasks?.requests, method, "Server");
   }
-  async _oninitialize(request) {
-    const requestedVersion = request.params.protocolVersion;
-    this._clientCapabilities = request.params.capabilities;
-    this._clientVersion = request.params.clientInfo;
+  async _oninitialize(request2) {
+    const requestedVersion = request2.params.protocolVersion;
+    this._clientCapabilities = request2.params.capabilities;
+    this._clientVersion = request2.params.clientInfo;
     const protocolVersion = SUPPORTED_PROTOCOL_VERSIONS.includes(requestedVersion) ? requestedVersion : LATEST_PROTOCOL_VERSION;
     return {
       protocolVersion,
@@ -20189,33 +20193,33 @@ var McpServer = class {
         return toolDefinition;
       })
     }));
-    this.server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
+    this.server.setRequestHandler(CallToolRequestSchema, async (request2, extra) => {
       try {
-        const tool = this._registeredTools[request.params.name];
+        const tool = this._registeredTools[request2.params.name];
         if (!tool) {
-          throw new McpError(ErrorCode.InvalidParams, `Tool ${request.params.name} not found`);
+          throw new McpError(ErrorCode.InvalidParams, `Tool ${request2.params.name} not found`);
         }
         if (!tool.enabled) {
-          throw new McpError(ErrorCode.InvalidParams, `Tool ${request.params.name} disabled`);
+          throw new McpError(ErrorCode.InvalidParams, `Tool ${request2.params.name} disabled`);
         }
-        const isTaskRequest = !!request.params.task;
+        const isTaskRequest = !!request2.params.task;
         const taskSupport = tool.execution?.taskSupport;
         const isTaskHandler = "createTask" in tool.handler;
         if ((taskSupport === "required" || taskSupport === "optional") && !isTaskHandler) {
-          throw new McpError(ErrorCode.InternalError, `Tool ${request.params.name} has taskSupport '${taskSupport}' but was not registered with registerToolTask`);
+          throw new McpError(ErrorCode.InternalError, `Tool ${request2.params.name} has taskSupport '${taskSupport}' but was not registered with registerToolTask`);
         }
         if (taskSupport === "required" && !isTaskRequest) {
-          throw new McpError(ErrorCode.MethodNotFound, `Tool ${request.params.name} requires task augmentation (taskSupport: 'required')`);
+          throw new McpError(ErrorCode.MethodNotFound, `Tool ${request2.params.name} requires task augmentation (taskSupport: 'required')`);
         }
         if (taskSupport === "optional" && !isTaskRequest && isTaskHandler) {
-          return await this.handleAutomaticTaskPolling(tool, request, extra);
+          return await this.handleAutomaticTaskPolling(tool, request2, extra);
         }
-        const args = await this.validateToolInput(tool, request.params.arguments, request.params.name);
+        const args = await this.validateToolInput(tool, request2.params.arguments, request2.params.name);
         const result = await this.executeToolHandler(tool, args, extra);
         if (isTaskRequest) {
           return result;
         }
-        await this.validateToolOutput(tool, result, request.params.name);
+        await this.validateToolOutput(tool, result, request2.params.name);
         return result;
       } catch (error2) {
         if (error2 instanceof McpError) {
@@ -20316,11 +20320,11 @@ var McpServer = class {
   /**
    * Handles automatic task polling for tools with taskSupport 'optional'.
    */
-  async handleAutomaticTaskPolling(tool, request, extra) {
+  async handleAutomaticTaskPolling(tool, request2, extra) {
     if (!extra.taskStore) {
       throw new Error("No task store provided for task-capable tool.");
     }
-    const args = await this.validateToolInput(tool, request.params.arguments, request.params.name);
+    const args = await this.validateToolInput(tool, request2.params.arguments, request2.params.name);
     const handler = tool.handler;
     const taskExtra = { ...extra, taskStore: extra.taskStore };
     const createTaskResult = args ? await Promise.resolve(handler.createTask(args, taskExtra)) : (
@@ -20348,21 +20352,21 @@ var McpServer = class {
     this.server.registerCapabilities({
       completions: {}
     });
-    this.server.setRequestHandler(CompleteRequestSchema, async (request) => {
-      switch (request.params.ref.type) {
+    this.server.setRequestHandler(CompleteRequestSchema, async (request2) => {
+      switch (request2.params.ref.type) {
         case "ref/prompt":
-          assertCompleteRequestPrompt(request);
-          return this.handlePromptCompletion(request, request.params.ref);
+          assertCompleteRequestPrompt(request2);
+          return this.handlePromptCompletion(request2, request2.params.ref);
         case "ref/resource":
-          assertCompleteRequestResourceTemplate(request);
-          return this.handleResourceCompletion(request, request.params.ref);
+          assertCompleteRequestResourceTemplate(request2);
+          return this.handleResourceCompletion(request2, request2.params.ref);
         default:
-          throw new McpError(ErrorCode.InvalidParams, `Invalid completion reference: ${request.params.ref}`);
+          throw new McpError(ErrorCode.InvalidParams, `Invalid completion reference: ${request2.params.ref}`);
       }
     });
     this._completionHandlerInitialized = true;
   }
-  async handlePromptCompletion(request, ref) {
+  async handlePromptCompletion(request2, ref) {
     const prompt = this._registeredPrompts[ref.name];
     if (!prompt) {
       throw new McpError(ErrorCode.InvalidParams, `Prompt ${ref.name} not found`);
@@ -20374,7 +20378,7 @@ var McpServer = class {
       return EMPTY_COMPLETION_RESULT;
     }
     const promptShape = getObjectShape(prompt.argsSchema);
-    const field = promptShape?.[request.params.argument.name];
+    const field = promptShape?.[request2.params.argument.name];
     if (!isCompletable(field)) {
       return EMPTY_COMPLETION_RESULT;
     }
@@ -20382,22 +20386,22 @@ var McpServer = class {
     if (!completer) {
       return EMPTY_COMPLETION_RESULT;
     }
-    const suggestions = await completer(request.params.argument.value, request.params.context);
+    const suggestions = await completer(request2.params.argument.value, request2.params.context);
     return createCompletionResult(suggestions);
   }
-  async handleResourceCompletion(request, ref) {
+  async handleResourceCompletion(request2, ref) {
     const template = Object.values(this._registeredResourceTemplates).find((t) => t.resourceTemplate.uriTemplate.toString() === ref.uri);
     if (!template) {
       if (this._registeredResources[ref.uri]) {
         return EMPTY_COMPLETION_RESULT;
       }
-      throw new McpError(ErrorCode.InvalidParams, `Resource template ${request.params.ref.uri} not found`);
+      throw new McpError(ErrorCode.InvalidParams, `Resource template ${request2.params.ref.uri} not found`);
     }
-    const completer = template.resourceTemplate.completeCallback(request.params.argument.name);
+    const completer = template.resourceTemplate.completeCallback(request2.params.argument.name);
     if (!completer) {
       return EMPTY_COMPLETION_RESULT;
     }
-    const suggestions = await completer(request.params.argument.value, request.params.context);
+    const suggestions = await completer(request2.params.argument.value, request2.params.context);
     return createCompletionResult(suggestions);
   }
   setResourceRequestHandlers() {
@@ -20412,7 +20416,7 @@ var McpServer = class {
         listChanged: true
       }
     });
-    this.server.setRequestHandler(ListResourcesRequestSchema, async (request, extra) => {
+    this.server.setRequestHandler(ListResourcesRequestSchema, async (request2, extra) => {
       const resources = Object.entries(this._registeredResources).filter(([_, resource]) => resource.enabled).map(([uri, resource]) => ({
         uri,
         name: resource.name,
@@ -20442,8 +20446,8 @@ var McpServer = class {
       }));
       return { resourceTemplates };
     });
-    this.server.setRequestHandler(ReadResourceRequestSchema, async (request, extra) => {
-      const uri = new URL(request.params.uri);
+    this.server.setRequestHandler(ReadResourceRequestSchema, async (request2, extra) => {
+      const uri = new URL(request2.params.uri);
       const resource = this._registeredResources[uri.toString()];
       if (resource) {
         if (!resource.enabled) {
@@ -20482,21 +20486,21 @@ var McpServer = class {
         };
       })
     }));
-    this.server.setRequestHandler(GetPromptRequestSchema, async (request, extra) => {
-      const prompt = this._registeredPrompts[request.params.name];
+    this.server.setRequestHandler(GetPromptRequestSchema, async (request2, extra) => {
+      const prompt = this._registeredPrompts[request2.params.name];
       if (!prompt) {
-        throw new McpError(ErrorCode.InvalidParams, `Prompt ${request.params.name} not found`);
+        throw new McpError(ErrorCode.InvalidParams, `Prompt ${request2.params.name} not found`);
       }
       if (!prompt.enabled) {
-        throw new McpError(ErrorCode.InvalidParams, `Prompt ${request.params.name} disabled`);
+        throw new McpError(ErrorCode.InvalidParams, `Prompt ${request2.params.name} disabled`);
       }
       if (prompt.argsSchema) {
         const argsObj = normalizeObjectSchema(prompt.argsSchema);
-        const parseResult = await safeParseAsync2(argsObj, request.params.arguments);
+        const parseResult = await safeParseAsync2(argsObj, request2.params.arguments);
         if (!parseResult.success) {
           const error2 = "error" in parseResult ? parseResult.error : "Unknown error";
           const errorMessage = getParseErrorMessage(error2);
-          throw new McpError(ErrorCode.InvalidParams, `Invalid arguments for prompt ${request.params.name}: ${errorMessage}`);
+          throw new McpError(ErrorCode.InvalidParams, `Invalid arguments for prompt ${request2.params.name}: ${errorMessage}`);
         }
         const args = parseResult.data;
         const cb = prompt.callback;
@@ -20986,276 +20990,131 @@ var StdioServerTransport = class {
 };
 
 // src/index.ts
+import { pathToFileURL } from "node:url";
 var API_BASE = "https://crazyrouter.com/v1";
-var DEFAULT_CHAT_MODEL = "gpt-5-mini";
-var DEFAULT_IMAGE_MODEL = "dall-e-3";
-var DEFAULT_VIDEO_MODEL = "kling-v2-1";
-function getApiKey() {
-  const key = process.env.CRAZYROUTER_API_KEY;
-  if (!key) {
-    throw new Error(
-      "CRAZYROUTER_API_KEY environment variable is required. Get your API key at https://crazyrouter.com"
-    );
+async function request(url, body, authenticated = true) {
+  const headers = { "Content-Type": "application/json" };
+  if (authenticated) {
+    const key = process.env.CRAZYROUTER_API_KEY;
+    if (!key) throw new Error("Set CRAZYROUTER_API_KEY before calling this tool.");
+    headers.Authorization = `Bearer ${key}`;
   }
-  return key;
-}
-async function apiRequest(endpoint, options = {}) {
-  const apiKey = getApiKey();
-  const { method = "GET", body } = options;
-  const headers = {
-    Authorization: `Bearer ${apiKey}`,
-    "Content-Type": "application/json"
-  };
-  const fetchOptions = {
-    method,
-    headers
-  };
-  if (body) {
-    fetchOptions.body = JSON.stringify(body);
-  }
-  const response = await fetch(`${API_BASE}${endpoint}`, fetchOptions);
+  const response = await fetch(url, {
+    method: body ? "POST" : "GET",
+    headers,
+    body: body ? JSON.stringify(body) : void 0,
+    signal: AbortSignal.timeout(18e4)
+  });
   if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(
-      `Crazyrouter API error (${response.status}): ${errorText}`
-    );
+    let detail = (await response.text()).slice(0, 1500);
+    const key = process.env.CRAZYROUTER_API_KEY;
+    if (key) detail = detail.split(key).join("[redacted]");
+    throw new Error(`Crazyrouter HTTP ${response.status}: ${detail}`);
   }
   return response.json();
 }
-var MODEL_CATEGORIES = {
-  chat: [
-    "gpt-5",
-    "gpt-5-mini",
-    "gpt-4.1",
-    "gpt-4.1-mini",
-    "gpt-4o",
-    "o3",
-    "o4-mini",
-    "claude-opus-4-6",
-    "claude-sonnet-4",
-    "claude-haiku-3.5",
-    "gemini-3-pro",
-    "gemini-2.5-flash",
-    "deepseek-r1",
-    "deepseek-v3",
-    "llama-4-scout",
-    "llama-4-maverick",
-    "qwen3-235b",
-    "qwen3-32b",
-    "grok-4",
-    "grok-3",
-    "mistral-large"
-  ],
-  image: [
-    "dall-e-3",
-    "midjourney",
-    "flux-pro-1.1-ultra",
-    "flux-kontext-pro",
-    "flux-kontext-max",
-    "sd3.5-large",
-    "sd3.5-large-turbo",
-    "stable-diffusion-xl-1024-v1-0",
-    "imagen-4.0-generate-001",
-    "imagen-4.0-ultra-generate-001",
-    "imagen-3.0-generate-002"
-  ],
-  video: [
-    "sora-2",
-    "kling-v2-1",
-    "kling-v1",
-    "veo3",
-    "doubao-seedance-1-5-pro_720p",
-    "pika-1.5",
-    "runway-vip-video",
-    "MiniMax-Hailuo-2.3"
-  ],
-  audio: ["tts-1", "tts-1-hd", "gpt-4o-mini-tts", "gemini-2.5-flash-preview-tts", "gemini-2.5-pro-preview-tts", "whisper-1"],
-  music: ["suno_music", "suno-v3", "suno_lyrics"]
-};
+async function catalogue() {
+  const result = await request("https://crazyrouter.com/api/pricing", void 0, false);
+  if (result.success !== true || !Array.isArray(result.data)) throw new Error("Public model catalogue is unavailable. Check https://crazyrouter.com/models.");
+  return result.data;
+}
+function category(model) {
+  const types = model.public_endpoint_types ?? [];
+  if (types.some((t) => t.includes("video") || t === "kling")) return "video";
+  if (types.includes("suno")) return "music";
+  if (types.includes("image-generation") || types.includes("midjourney")) return "image";
+  if (/tts|whisper|speech|transcri|audio/.test(model.model_name)) return "audio";
+  if (/embedding|rerank|moderation/.test(model.model_name)) return "other";
+  return types.includes("openai") || types.includes("anthropic") || types.includes("gemini") ? "chat" : "other";
+}
+function errorResult(error2) {
+  return { content: [{ type: "text", text: error2 instanceof Error ? error2.message : "Unknown error" }], isError: true };
+}
 function createServer() {
-  const server = new McpServer({
-    name: "crazyrouter",
-    version: "1.0.0",
-    description: "Access 627+ AI models through Crazyrouter \u2014 chat, image generation, video generation, music, and more."
+  const server = new McpServer({ name: "crazyrouter", version: "1.0.1" });
+  server.tool("chat", "Send text messages to a model supporting Chat Completions. Model-specific parameter limits apply.", {
+    model: external_exports.string().default("gpt-4o-mini"),
+    messages: external_exports.array(external_exports.object({ role: external_exports.enum(["system", "user", "assistant"]), content: external_exports.string() })).min(1),
+    temperature: external_exports.number().min(0).max(2).optional(),
+    max_tokens: external_exports.number().int().positive().optional(),
+    max_completion_tokens: external_exports.number().int().positive().optional()
+  }, async ({ model, messages, temperature, max_tokens, max_completion_tokens }) => {
+    try {
+      if (max_tokens !== void 0 && max_completion_tokens !== void 0) throw new Error("Use only one token limit: max_tokens or max_completion_tokens.");
+      const models = await catalogue();
+      const selected = models.find((m) => m.model_name === model);
+      if (!selected || category(selected) !== "chat" || !selected.public_endpoint_types?.includes("openai")) {
+        throw new Error("This model is not listed for Chat Completions. Use its documented endpoint; see https://docs.crazyrouter.com.");
+      }
+      const body = { model, messages };
+      if (temperature !== void 0) body.temperature = temperature;
+      if (max_tokens !== void 0) body.max_tokens = max_tokens;
+      if (max_completion_tokens !== void 0) body.max_completion_tokens = max_completion_tokens;
+      const result = await request(`${API_BASE}/chat/completions`, body);
+      const content = result.choices?.[0]?.message?.content;
+      if (typeof content !== "string" || content.length === 0) throw new Error("No text response. Check the model's token budget and response format.");
+      return { content: [{ type: "text", text: content }] };
+    } catch (error2) {
+      return errorResult(error2);
+    }
   });
-  server.tool(
-    "chat",
-    "Send a message to any AI model via Crazyrouter. Supports 627+ models including GPT-5, Claude Opus 4.6, Gemini 3, DeepSeek R1, Llama 4, Qwen3, Grok 4, and more.",
-    {
-      model: external_exports.string().default(DEFAULT_CHAT_MODEL).describe(
-        `The AI model to use (default: ${DEFAULT_CHAT_MODEL}). Examples: gpt-5, claude-opus-4-6, gemini-3-pro, deepseek-r1, llama-4-scout, qwen3-235b, grok-4`
-      ),
-      messages: external_exports.array(
-        external_exports.object({
-          role: external_exports.enum(["system", "user", "assistant"]).describe("The role of the message sender"),
-          content: external_exports.string().describe("The message content")
-        })
-      ).describe("Array of chat messages with role and content"),
-      temperature: external_exports.number().min(0).max(2).optional().describe(
-        "Sampling temperature (0-2). Lower = more deterministic, higher = more creative"
-      ),
-      max_tokens: external_exports.number().optional().describe("Maximum number of tokens to generate")
-    },
-    async ({ model, messages, temperature, max_tokens }) => {
-      try {
-        const body = { model, messages };
-        if (temperature !== void 0) body.temperature = temperature;
-        if (max_tokens !== void 0) body.max_tokens = max_tokens;
-        const result = await apiRequest("/chat/completions", {
-          method: "POST",
-          body
-        });
-        const content = result.choices?.[0]?.message?.content ?? "No response content";
-        const usage = result.usage;
-        const actualModel = result.model ?? model;
-        let text = content;
-        if (usage) {
-          text += `
-
----
-\u{1F4CA} Model: ${actualModel} | Tokens: ${usage.prompt_tokens ?? "?"}\u2192${usage.completion_tokens ?? "?"} (${usage.total_tokens ?? "?"} total)`;
-        }
-        return { content: [{ type: "text", text }] };
-      } catch (error2) {
-        const message = error2 instanceof Error ? error2.message : "Unknown error occurred";
-        return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
-      }
+  server.tool("list_models", "List models returned for your key. Categories use public endpoint metadata; discovery does not imply this MCP implements every model protocol.", {
+    category: external_exports.enum(["chat", "image", "video", "audio", "music", "other"]).optional()
+  }, async ({ category: filter }) => {
+    try {
+      const live = await request(`${API_BASE}/models`);
+      if (!Array.isArray(live.data)) throw new Error("Invalid model discovery response.");
+      const metadata = await catalogue();
+      const byId = new Map(metadata.map((m) => [m.model_name, m]));
+      const models = live.data.map((m) => ({ id: m.id, category: byId.has(m.id) ? category(byId.get(m.id)) : "other", endpoints: byId.get(m.id)?.public_endpoint_types ?? [] })).filter((m) => !filter || m.category === filter);
+      return { content: [{ type: "text", text: JSON.stringify({ models, count: models.length, note: "Available for this key at query time. This MCP generates text and synchronous images only; use provider documentation for other protocols." }, null, 2) }] };
+    } catch (error2) {
+      return errorResult(error2);
     }
-  );
-  server.tool(
-    "list_models",
-    "List available AI models on Crazyrouter. Filter by category: chat, image, video, audio, or music.",
-    {
-      category: external_exports.enum(["chat", "image", "video", "audio", "music"]).optional().describe("Filter models by category. Options: chat, image, video, audio, music. Omit to show all categories.")
-    },
-    async ({ category }) => {
-      try {
-        let liveModels = [];
-        try {
-          const result = await apiRequest("/models");
-          if (result.data) liveModels = result.data.map((m) => m.id);
-        } catch {
-        }
-        let output = "";
-        if (category) {
-          const models = MODEL_CATEGORIES[category] ?? [];
-          output = `## ${category.charAt(0).toUpperCase() + category.slice(1)} Models
-
-`;
-          output += models.map((m) => `- ${m}`).join("\n");
-          output += `
-
-Total: ${models.length} models listed (${liveModels.length > 0 ? liveModels.length + " total available via API" : "627+ total available"})`;
-        } else {
-          output = "## Available Model Categories\n\n";
-          for (const [cat, models] of Object.entries(MODEL_CATEGORIES)) {
-            const emoji2 = cat === "chat" ? "\u{1F4AC}" : cat === "image" ? "\u{1F3A8}" : cat === "video" ? "\u{1F3AC}" : cat === "audio" ? "\u{1F5E3}\uFE0F" : "\u{1F3B5}";
-            output += `### ${emoji2} ${cat.charAt(0).toUpperCase() + cat.slice(1)} (${models.length} listed)
-`;
-            output += models.map((m) => `- ${m}`).join("\n");
-            output += "\n\n";
-          }
-          output += `---
-\u{1F4CA} Total: 627+ models available on Crazyrouter
-\u{1F517} Full list: https://crazyrouter.com/models`;
-        }
-        return { content: [{ type: "text", text: output }] };
-      } catch (error2) {
-        const message = error2 instanceof Error ? error2.message : "Unknown error occurred";
-        return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+  });
+  server.tool("generate_image", "Generate one image using a model listed for /v1/images/generations. Returns a URL or a base64 image. Midjourney and video task APIs are not supported by this tool.", {
+    prompt: external_exports.string().min(1),
+    model: external_exports.string().default("gpt-image-2"),
+    size: external_exports.string().optional(),
+    n: external_exports.number().int().min(1).max(1).optional()
+  }, async ({ prompt, model, size, n }) => {
+    try {
+      const models = await catalogue();
+      if (!models.find((m) => m.model_name === model)?.public_endpoint_types?.includes("image-generation")) {
+        throw new Error("This model is not listed for /v1/images/generations. Use its native endpoint from https://docs.crazyrouter.com.");
       }
-    }
-  );
-  server.tool(
-    "generate_image",
-    "Generate images using AI models via Crazyrouter. Supports DALL-E 3, Midjourney, Flux, Stable Diffusion, and more.",
-    {
-      prompt: external_exports.string().describe("Text description of the image to generate"),
-      model: external_exports.string().default(DEFAULT_IMAGE_MODEL).describe(`Image generation model to use (default: ${DEFAULT_IMAGE_MODEL}). Options: dall-e-3, midjourney, flux-pro-1.1-ultra, flux-kontext-pro, sd3.5-large, imagen-4.0-generate-001`),
-      size: external_exports.string().optional().describe("Image size. For DALL-E 3: 1024x1024, 1024x1792, 1792x1024."),
-      n: external_exports.number().min(1).max(4).optional().describe("Number of images to generate (1-4, default: 1)")
-    },
-    async ({ prompt, model, size, n }) => {
-      try {
-        const body = { model, prompt };
-        if (size) body.size = size;
-        if (n) body.n = n;
-        const result = await apiRequest("/images/generations", {
-          method: "POST",
-          body
-        });
-        if (!result.data || result.data.length === 0) {
-          return { content: [{ type: "text", text: "No images were generated. Please try a different prompt." }] };
+      const body = { model, prompt, n: n ?? 1 };
+      if (size !== void 0) body.size = size;
+      const result = await request(`${API_BASE}/images/generations`, body);
+      const content = [];
+      for (const img of result.data ?? []) {
+        if (img.url) content.push({ type: "text", text: String(img.url) });
+        if (img.b64_json) {
+          const bytes = Buffer.from(img.b64_json, "base64");
+          const mimeType = bytes.subarray(0, 4).equals(Buffer.from([137, 80, 78, 71])) ? "image/png" : bytes[0] === 255 && bytes[1] === 216 ? "image/jpeg" : bytes.toString("ascii", 0, 4) === "RIFF" && bytes.toString("ascii", 8, 12) === "WEBP" ? "image/webp" : null;
+          if (!mimeType) throw new Error("Unrecognized image format in base64 response.");
+          content.push({ type: "image", data: img.b64_json, mimeType });
         }
-        const images = result.data;
-        let text = `\u{1F3A8} Generated ${images.length} image(s) with ${model}:
-
-`;
-        for (let i = 0; i < images.length; i++) {
-          const img = images[i];
-          if (img.url) text += `**Image ${i + 1}:** ${img.url}
-`;
-          if (img.revised_prompt) text += `*Revised prompt:* ${img.revised_prompt}
-`;
-          text += "\n";
-        }
-        return { content: [{ type: "text", text }] };
-      } catch (error2) {
-        const message = error2 instanceof Error ? error2.message : "Unknown error occurred";
-        return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
       }
+      if (!content.length) throw new Error("No image was returned; inspect the model parameters and API response.");
+      return { content };
+    } catch (error2) {
+      return errorResult(error2);
     }
-  );
-  server.tool(
-    "generate_video",
-    "Generate videos using AI models via Crazyrouter. Supports Sora 2, Kling V2, Veo 3, Seedance, Pika, and more.",
-    {
-      prompt: external_exports.string().describe("Text description of the video to generate"),
-      model: external_exports.string().default(DEFAULT_VIDEO_MODEL).describe(`Video generation model to use (default: ${DEFAULT_VIDEO_MODEL}). Options: sora-2, kling-v2-1, veo3, doubao-seedance-1-5-pro_720p, pika-1.5, runway-vip-video, MiniMax-Hailuo-2.3`)
-    },
-    async ({ prompt, model }) => {
-      try {
-        const body = {
-          model,
-          messages: [{ role: "user", content: prompt }]
-        };
-        const result = await apiRequest("/chat/completions", {
-          method: "POST",
-          body
-        });
-        const content = result.choices?.[0]?.message?.content ?? "Video generation initiated.";
-        const videoUrl = result.video_url;
-        let text = `\u{1F3AC} Video generation with ${model}:
-
-`;
-        if (videoUrl) text += `**Video URL:** ${videoUrl}
-
-`;
-        text += content;
-        return { content: [{ type: "text", text }] };
-      } catch (error2) {
-        const message = error2 instanceof Error ? error2.message : "Unknown error occurred";
-        return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
-      }
-    }
-  );
+  });
   return server;
 }
 function createSandboxServer() {
   return createServer();
 }
-async function main() {
-  const server = createServer();
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Crazyrouter MCP Server running on stdio");
-  console.error("Access 627+ AI models at https://crazyrouter.com");
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  createServer().connect(new StdioServerTransport()).then(() => console.error("Crazyrouter MCP server running on stdio")).catch((error2) => {
+    console.error(error2 instanceof Error ? error2.message : "Startup failed");
+    process.exitCode = 1;
+  });
 }
-main().catch((error2) => {
-  console.error("Fatal error:", error2);
-  process.exit(1);
-});
 export {
-  createSandboxServer
+  createSandboxServer,
+  createServer
 };
 //# sourceMappingURL=module.js.map

@@ -1,348 +1,114 @@
-# Crazyrouter MCP Server — Access 627+ AI Models with One API
+# Crazyrouter MCP: chat, image generation and model discovery
 
-> **One key. 627+ models. Text, image, video, audio, music, 3D — all through MCP.**
+Updated 2026-10-12. This MCP server connects supported clients to Crazyrouter using your API key. The repository implements three tools; the gateway's complete catalogue is broader than these tools.
 
-[![npm version](https://img.shields.io/npm/v/crazyrouter-mcp.svg)](https://www.npmjs.com/package/crazyrouter-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
-[![MCP Protocol](https://img.shields.io/badge/MCP-Protocol-blue.svg)](https://modelcontextprotocol.io)
-[![npm](https://img.shields.io/badge/npm-crazyrouter--mcp-red.svg)](https://www.npmjs.com/package/crazyrouter-mcp)
+## Tools
 
-An MCP (Model Context Protocol) server that gives your AI assistant access to **627+ AI models** through [Crazyrouter](https://crazyrouter.com?utm_source=github&utm_medium=mcp&utm_campaign=dev_community) — the unified AI API gateway. Chat with GPT-5, generate images with DALL-E 3, create videos with Sora 2, compose music with Suno V4, and more — all from a single API key.
+| Tool | API | Scope |
+|---|---|---|
+| `chat` | `POST /v1/chat/completions` | Text messages for models listed for Chat Completions; default `gpt-4o-mini` |
+| `list_models` | `GET /v1/models` plus public endpoint metadata | Live models available to your key; optional category filter |
+| `generate_image` | `POST /v1/images/generations` | One synchronous image; default `gpt-image-2`; model-specific sizes |
 
----
+Model discovery does not imply that this MCP implements each model's protocol. Video, music, transcription, TTS and Midjourney tasks require their own APIs. The old `generate_video` implementation sent video models to a chat endpoint and has been removed. Use the [API documentation](https://docs.crazyrouter.com?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_01__en&utm_medium=github_readme) for those task APIs.
 
-## ✨ Features
+The server no longer silently replaces failed discovery with a hardcoded model list. Authentication and discovery errors are returned to the client. Categories use public endpoint metadata and name-based audio detection; unknown types appear under `other`.
 
-- 🌐 **627+ Models, One API** — GPT-5, Claude Opus 4.6, Gemini 3, DeepSeek R1, Llama 4, Qwen3, Grok 4, and hundreds more
-- 🎨 **Image Generation** — DALL-E 3, Midjourney, Flux, Stable Diffusion, Nano Banana Pro
-- 🎬 **Video Generation** — Sora 2, Kling V2, Veo 3, Seedance, Pika
-- 🎵 **Music Generation** — Suno V4, Chirp
-- 🗣️ **Text-to-Speech & Speech-to-Text** — Multiple TTS/STT engines
-- 💰 **Competitive Pricing** — Below official rates for most models
-- 🌍 **7 Global Edge Nodes** — Low latency worldwide
-- 🔄 **OpenAI + Anthropic + Gemini Protocol Compatible** — Drop-in replacement
-- ⚡ **Credits Never Expire** — Pay once, use anytime
+## Install from this repository
 
----
-
-## 🚀 Quick Start
-
-### 1. Get Your API Key
-
-Sign up at [crazyrouter.com](https://crazyrouter.com?utm_source=github&utm_medium=mcp&utm_campaign=dev_community) and grab your API key.
-
-### 2. Install
+Requires Node.js 22 or later.
 
 ```bash
 git clone https://github.com/xujfcn/crazyrouter-mcp.git
 cd crazyrouter-mcp
-npm install
+npm ci
 npm run build
 ```
 
-### 3. Configure Your AI Client
+These instructions use the repository build. They do not assume that an npm registry release has been updated to match it.
 
-<details>
-<summary><strong>Claude Desktop</strong></summary>
+## Claude Desktop or Cursor
 
-Edit `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) or `%APPDATA%\Claude\claude_desktop_config.json` (Windows):
-
-```json
-{
-  "mcpServers": {
-    "crazyrouter": {
-      "command": "node",
-      "args": ["/path/to/crazyrouter-mcp/dist/index.js"],
-      "env": {
-        "CRAZYROUTER_API_KEY": "your-api-key-here"
-      }
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Cursor</strong></summary>
-
-Edit `.cursor/mcp.json` in your project root:
+Create a key in the [Crazyrouter console](https://crazyrouter.com/console/token?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_02__en&utm_medium=github_readme). Add the following to the client's MCP configuration, replacing the absolute path and key locally:
 
 ```json
 {
   "mcpServers": {
     "crazyrouter": {
       "command": "node",
-      "args": ["/path/to/crazyrouter-mcp/dist/index.js"],
-      "env": {
-        "CRAZYROUTER_API_KEY": "your-api-key-here"
-      }
+      "args": ["/absolute/path/to/crazyrouter-mcp/dist/index.js"],
+      "env": { "CRAZYROUTER_API_KEY": "YOUR_CRAZYROUTER_API_KEY" }
     }
   }
 }
 ```
 
-</details>
+Claude Desktop uses its `claude_desktop_config.json`; Cursor supports `.cursor/mcp.json`. Restart the client after editing. Do not commit a configuration containing a real key.
 
-<details>
-<summary><strong>VS Code (Copilot)</strong></summary>
+## VS Code
 
-Add to your VS Code `settings.json`:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "crazyrouter": {
-        "command": "node",
-        "args": ["/path/to/crazyrouter-mcp/dist/index.js"],
-        "env": {
-          "CRAZYROUTER_API_KEY": "your-api-key-here"
-        }
-      }
-    }
-  }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Windsurf</strong></summary>
-
-Edit `~/.codeium/windsurf/mcp_config.json`:
+Use `.vscode/mcp.json` and the VS Code MCP schema:
 
 ```json
 {
-  "mcpServers": {
+  "servers": {
     "crazyrouter": {
+      "type": "stdio",
       "command": "node",
-      "args": ["/path/to/crazyrouter-mcp/dist/index.js"],
-      "env": {
-        "CRAZYROUTER_API_KEY": "your-api-key-here"
-      }
+      "args": ["/absolute/path/to/crazyrouter-mcp/dist/index.js"],
+      "env": { "CRAZYROUTER_API_KEY": "${input:crazyrouter-api-key}" }
     }
-  }
+  },
+  "inputs": [
+    { "type": "promptString", "id": "crazyrouter-api-key", "description": "Crazyrouter API key", "password": true }
+  ]
 }
 ```
 
-</details>
-
-<details>
-<summary><strong>OpenClaw</strong></summary>
-
-Add to your OpenClaw MCP config:
+## Example tool arguments
 
 ```json
-{
-  "mcpServers": {
-    "crazyrouter": {
-      "command": "node",
-      "args": ["/path/to/crazyrouter-mcp/dist/index.js"],
-      "env": {
-        "CRAZYROUTER_API_KEY": "your-api-key-here"
-      }
-    }
-  }
-}
+{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Reply OK"}],"max_tokens":16}
 ```
 
-</details>
+Use only one of `max_tokens` and `max_completion_tokens`, according to the model's documented schema. Do not send optional temperature values to models that do not support them.
 
----
-
-## 🛠️ Available Tools
-
-| Tool | Description | Key Parameters |
-|------|-------------|----------------|
-| `chat` | Chat with any AI model | `model`, `messages`, `temperature` |
-| `list_models` | List available models by category | `category` (chat/image/video/audio/music) |
-| `generate_image` | Generate images with AI | `prompt`, `model`, `size` |
-| `generate_video` | Generate videos with AI | `prompt`, `model` |
-
-### Usage Examples
-
-**Chat with any model:**
-> "Use the chat tool to ask GPT-5 to explain quantum computing"
-
-**Generate an image:**
-> "Use generate_image to create a sunset over mountains with DALL-E 3"
-
-**Generate a video:**
-> "Use generate_video with Kling V2 to create a 5-second clip of ocean waves"
-
-**Discover models:**
-> "Use list_models to show me all available image generation models"
-
----
-
-## 📋 Supported Models
-
-### 💬 Chat / Text Models
-
-| Provider | Models |
-|----------|--------|
-| OpenAI | GPT-5, GPT-5-mini, GPT-4.1, GPT-4o, o3, o4-mini |
-| Anthropic | Claude Opus 4.6, Claude Sonnet 4, Claude Haiku 3.5 |
-| Google | Gemini 3 Pro, Gemini 2.5 Flash, Gemini 2.0 |
-| DeepSeek | DeepSeek R1, DeepSeek V3 |
-| Meta | Llama 4 Scout, Llama 4 Maverick |
-| Alibaba | Qwen3 235B, Qwen3 32B, Qwen3 Coder |
-| xAI | Grok 4, Grok 3 |
-| Mistral | Mistral Large, Codestral |
-| And more... | 600+ chat models available |
-
-### 🎨 Image Generation Models
-
-| Model | Description |
-|-------|-------------|
-| DALL-E 3 | OpenAI's latest image model |
-| Midjourney | Industry-leading artistic image generation |
-| Flux Pro 1.1 Ultra | Black Forest Labs' flagship model |
-| Flux Kontext Pro/Max | Contextual image generation |
-| Stable Diffusion 3.5 Large | Stability AI's open model |
-| Stable Diffusion XL | Classic high-quality generation |
-| Imagen 4.0 | Google's latest image model |
-| Imagen 3.0 | Google's proven image model |
-
-### 🎬 Video Generation Models
-
-| Model | Description |
-|-------|-------------|
-| Sora 2 | OpenAI's video generation model |
-| Kling V2 | Kuaishou's cinematic video model |
-| Veo 3 | Google's video generation model |
-| Seedance 1.5 Pro | ByteDance's dance video model |
-| Pika 1.5 | Creative video generation |
-| Runway VIP | Professional video synthesis |
-| MiniMax Hailuo 2.3 | MiniMax's video model |
-
-### 🎵 Music & Audio Models
-
-| Model | Description |
-|-------|-------------|
-| Suno Music | AI music composition |
-| Suno V3 | Music generation model |
-| TTS-1 / TTS-1-HD | OpenAI text-to-speech |
-| GPT-4o Mini TTS | Latest OpenAI TTS |
-| Gemini TTS | Google text-to-speech |
-| Whisper-1 | Speech-to-text transcription |
-
-> 📖 Full model list: [crazyrouter.com/models](https://crazyrouter.com/models?utm_source=github&utm_medium=mcp&utm_campaign=dev_community)
-
----
-
-## 🔧 Configuration
-
-### Environment Variables
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `CRAZYROUTER_API_KEY` | ✅ | Your Crazyrouter API key |
-
-### API Endpoints
-
-Crazyrouter is **OpenAI-compatible**, meaning any tool or library that works with OpenAI can work with Crazyrouter by simply changing the base URL:
-
-```
-Base URL: https://crazyrouter.com/v1
+```json
+{"category":"image"}
 ```
 
-This MCP server uses the following endpoints:
-- `POST /v1/chat/completions` — Chat completions
-- `GET /v1/models` — List available models
-- `POST /v1/images/generations` — Image generation
+```json
+{"model":"gpt-image-2","prompt":"A simple blue circle on a white background","n":1}
+```
 
----
+Image output may be a URL or base64 image. The tool returns both formats through MCP and does not report success for an empty result. Size constraints vary by model. Image requests incur the model's normal charges.
 
-## 🏗️ Development
+## Prices and troubleshooting
+
+- [Current models](https://crazyrouter.com/en/models?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_03__en&utm_medium=github_readme) and [prices](https://crazyrouter.com/en/pricing?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_04__en&utm_medium=github_readme) are the source of truth; there is no fixed model count or universal discount.
+- HTTP 400: inspect the exact model ID, endpoint, size and other fields. Start with the minimal example.
+- HTTP 401/403: check your key and permissions. HTTP 429: inspect quota and rate limits.
+- Models requiring a native task API are rejected by the chat/image tools before inference.
+- The fixed API base is `https://crazyrouter.com/v1`; marketing parameters are never added to API requests.
+
+## Development
 
 ```bash
-# Clone the repo
-git clone https://github.com/xujfcn/crazyrouter-mcp.git
-cd crazyrouter-mcp
-
-# Install dependencies
-npm install
-
-# Build
+npm ci
 npm run build
-
-# Run
-CRAZYROUTER_API_KEY=your-key node dist/index.js
+npm test
 ```
 
-### Project Structure
+Tests use mocked HTTP responses through an MCP client/server connection. On 2026-10-12, live checks through the updated MCP passed for model discovery, a minimal `gpt-4o-mini` chat request and one `gpt-image-2` image request. This does not establish that every model or media operation has been tested. Maintainers can run `node tests/live-smoke.mjs`; add `--image` to include one billable image request.
 
-```
-crazyrouter-mcp/
-├── src/
-│   └── index.ts          # MCP server implementation
-├── dist/                  # Compiled output
-├── package.json
-├── tsconfig.json
-├── LICENSE
-└── README.md
-```
+## 中文说明
 
----
+本仓库支持文本聊天、同步图片生成、实时模型发现三个工具。模型目录会返回视频、音乐等类别，但不代表这些能力已在 MCP 中实现。旧版视频工具错误地调用聊天接口，已移除；请按 [API 文档](https://docs.crazyrouter.com?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_05__en&utm_medium=github_readme)使用原生任务接口。
 
-## 🤔 Why Crazyrouter?
+使用 Node.js 22+，克隆后运行 `npm ci` 和 `npm run build`，再将本地 `dist/index.js` 配置到 MCP 客户端。密钥通过 `CRAZYROUTER_API_KEY` 传入。不要将模型目录中的显示名称当作精确 API ID，也不要将推广参数添加到接口地址。
 
-| Feature | Crazyrouter | Direct API |
-|---------|------------|------------|
-| Models Available | 627+ | 1 provider |
-| API Keys Needed | 1 | Multiple |
-| Protocol Support | OpenAI + Anthropic + Gemini | Varies |
-| Pricing | Below official rates | Official rates |
-| Credits Expiry | Never | Varies |
-| Global Edge Nodes | 7 | Varies |
+[创建密钥](https://crazyrouter.com/console/token?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_06__en&utm_medium=github_readme) · [当前模型与价格](https://crazyrouter.com/zh/pricing?utm_source=github&utm_campaign=crazyrouter-mcp&utm_content=readme_07__en&utm_medium=github_readme)
 
-**One API key. All providers. Better prices.**
+## License
 
-👉 [Get started at crazyrouter.com](https://crazyrouter.com?utm_source=github&utm_medium=mcp&utm_campaign=dev_community)
-
----
-
-## 📄 License
-
-[MIT](LICENSE) — use it however you like.
-
----
-
-## 🔗 Links
-
-- 🌐 [Crazyrouter Website](https://crazyrouter.com?utm_source=github&utm_medium=mcp&utm_campaign=dev_community)
-- 📖 [API Documentation](https://crazyrouter.com/docs?utm_source=github&utm_medium=mcp&utm_campaign=dev_community)
-- 💬 [Discord Community](https://discord.gg/crazyrouter)
-- 🐛 [Report Issues](https://github.com/xujfcn/crazyrouter-mcp/issues)
-
----
-
-## 🌏 中文说明
-
-### Crazyrouter MCP 服务器 — 一个 API 访问 627+ AI 模型
-
-Crazyrouter MCP 服务器是一个标准的 MCP（模型上下文协议）服务器，让你的 AI 助手（如 Claude Desktop、Cursor、VS Code 等）通过 [Crazyrouter AI API 网关](https://crazyrouter.com?utm_source=github&utm_medium=mcp&utm_campaign=dev_community) 访问 627+ AI 模型。
-
-**核心功能：**
-- 🌐 627+ AI 模型，一个 API Key 搞定
-- 🎨 图片生成（DALL-E 3, Midjourney, Flux, Stable Diffusion）
-- 🎬 视频生成（Sora 2, Kling V2, Veo 3）
-- 🎵 音乐生成（Suno V4）
-- 💰 价格低于官方价格
-- ⚡ 充值永不过期
-
-**快速开始：**
-1. 在 [crazyrouter.com](https://crazyrouter.com?utm_source=github&utm_medium=mcp&utm_campaign=dev_community) 注册获取 API Key
-2. 克隆仓库并编译
-3. 配置到你的 AI 客户端（Claude Desktop / Cursor / VS Code）
-
-详细配置请参考上方英文文档。
-
----
-
-<p align="center">
-  Built with ❤️ for the AI community by <a href="https://crazyrouter.com?utm_source=github&utm_medium=mcp&utm_campaign=dev_community">Crazyrouter</a>
-</p>
+[MIT](LICENSE)
